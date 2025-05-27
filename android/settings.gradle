@@ -1,11 +1,29 @@
+pluginManagement {
+    // Esta función busca la ruta de tu SDK de Flutter desde el archivo local.properties
+    // que debe estar en la raíz de tu proyecto Flutter (un nivel arriba de la carpeta 'android')
+    def flutterSdkPath = {
+        def properties = new Properties()
+        // Corregimos la ruta para buscar local.properties en la raíz del proyecto Flutter
+        def localPropertiesFile = new File(settingsDir.parentFile, "local.properties")
+        assert localPropertiesFile.exists(), "local.properties not found in Flutter project root. Create one with a flutter.sdk entry."
+        localPropertiesFile.withInputStream { properties.load(it) }
+        def flutterSdk = properties.getProperty("flutter.sdk")
+        assert flutterSdk != null, "flutter.sdk not set in local.properties"
+        return flutterSdk
+    }()
+
+    // Esto le dice a Gradle dónde encontrar los plugins de compilación de Flutter
+    includeBuild "$flutterSdkPath/packages/flutter_tools/gradle"
+}
+
+plugins {
+    // Declara el plugin de Flutter para que esté disponible
+    id "dev.flutter.flutter-gradle-plugin" version "1.0.0" apply false
+}
+
+// Incluye tu módulo de aplicación Android principal
 include ':app'
 
-def localPropertiesFile = new File(rootProject.projectDir, "local.properties")
-def properties = new Properties()
-
-assert localPropertiesFile.exists()
-localPropertiesFile.withReader("UTF-8") { reader -> properties.load(reader) }
-
-def flutterSdkPath = properties.getProperty("flutter.sdk")
-assert flutterSdkPath != null, "flutter.sdk not set in local.properties"
-apply from: "$flutterSdkPath/packages/flutter_tools/gradle/app_plugin_loader.gradle"
+// Aplica el plugin de Flutter a este archivo settings.gradle,
+// lo que permite que configure la integración de Flutter con tus subproyectos (como :app)
+apply plugin: 'dev.flutter.flutter-gradle-plugin'
