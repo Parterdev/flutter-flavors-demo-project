@@ -1,4 +1,46 @@
 workflows:
+  android-dev-debug-build: # <--- NUEVO WORKFLOW PARA ANDROID
+    name: Android Development Debug Build
+    instance_type: linux_x2 # O mac_mini_m1
+    max_build_duration: 60
+    environment:
+      vars:
+        ANDROID_FLAVOR: "dev" # Flavor de desarrollo para Android
+        ANDROID_ENTRY_POINT: "lib/main_dev.dart" # Punto de entrada para desarrollo
+      flutter: stable
+      java: 11 # <--- Especificando la versión de JDK. Probar con 8 si 11 sigue dando problemas.
+      # cocoapods: default # No es necesario para Android a menos que uses plugins con dependencias nativas de iOS que se resuelven en Android
+    cache: # Opcional, pero recomendado para acelerar compilaciones
+      cache_paths:
+        - $HOME/.gradle/caches
+        - $HOME/.gradle/wrapper
+        - $FLUTTER_ROOT/.pub-cache
+    triggering: # Opcional: configura cuándo se debe ejecutar este workflow
+      events:
+        - push
+      branch_patterns:
+        - pattern: "develop" # Por ejemplo, si compilamos desde una rama 'develop'
+          include: true
+          source: true
+        - pattern: "main" # O la rama para desarrollo/pruebas
+          include: true
+          source: true
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$FLUTTER_ROOT" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Clean Android project # Opcional, pero puede ayudar con problemas de caché persistentes
+        script: |
+          cd android && ./gradlew clean && cd ..
+      - name: Build Android App Bundle (AAB)
+        script: |
+          flutter build appbundle \
+            --debug \
+            --flavor "$ANDROID_FLAVOR" \
+            -t "$ANDROID_ENTRY_POINT"
   ios-release:
     name: iOS release
     instance_type: mac_mini_m2
