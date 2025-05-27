@@ -8,7 +8,7 @@ workflows:
         ANDROID_FLAVOR: "dev" # Flavor de desarrollo para Android
         ANDROID_ENTRY_POINT: "lib/main_dev.dart" # Punto de entrada para desarrollo
       flutter: stable
-      java: 8 # <--- Especificando la versión de JDK. Probar con 8 si 11 sigue dando problemas.
+      java: 11 # <--- Especificando la versión de JDK. Probar con 8 si 11 sigue dando problemas.
       # cocoapods: default # No es necesario para Android a menos que uses plugins con dependencias nativas de iOS que se resuelven en Android
     cache: # Opcional, pero recomendado para acelerar compilaciones
       cache_paths:
